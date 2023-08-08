@@ -110,10 +110,9 @@ Matrix& Matrix::operator*=(const double num) {
 }
 
 double& Matrix::operator()(int i, int j) {
-  if (i > rows_ || j > cols_ || !IsNaturalNumbers(i, j)) {
+  if (i >= rows_ || j >= cols_ || i < 0 || j < 0) {
     throw "Index is outside the matrix";
   }
-  --i, --j;
   return matrix_[i][j];
 }
 

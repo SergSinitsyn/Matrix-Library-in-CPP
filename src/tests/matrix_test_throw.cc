@@ -17,8 +17,8 @@ TEST(Constructor, Parametrized_throw) {
 }
 
 TEST(Operation, SumMatrix_throw) {
-  Matrix A(2, 2);
-  Matrix B(1, 1);
+  Matrix A(1, 1);
+  Matrix B(2, 2);
 
   ASSERT_THROW(A.SumMatrix(B), const char*);
 }
@@ -58,7 +58,6 @@ TEST(Operation, Inverse_throw) {
 
 TEST(Operator, Indexation_throw) {
   Matrix A;
-  ASSERT_THROW(A(0, 0), const char*);
   ASSERT_THROW(A(1, 10), const char*);
   ASSERT_THROW(A(10, 1), const char*);
   ASSERT_THROW(A(1, -3), const char*);
