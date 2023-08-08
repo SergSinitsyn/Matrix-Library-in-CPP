@@ -5,7 +5,7 @@ WFLAGS 				= -Wall -Werror -Wextra
 CHECKFLAGS			= -lgtest -lm
 CLEAN				= rm -rf
 
-NAME				= s21_matrix_oop
+NAME				= matrix
 LIB					= $(NAME).a
 
 SOURCES_FILES		= *.cc
