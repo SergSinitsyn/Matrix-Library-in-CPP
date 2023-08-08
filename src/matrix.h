@@ -14,16 +14,6 @@ class Matrix {
   void SetRows(const int new_rows);
   void SetCols(const int new_cols);
 
-  bool EqMatrix(const Matrix& other) const;
-  void SumMatrix(const Matrix& other);
-  void SubMatrix(const Matrix& other);
-  void MulNumber(const double num);
-  void MulMatrix(const Matrix& other);
-  Matrix Transpose();
-  double Determinant();
-  Matrix CalcComplements();
-  Matrix InverseMatrix();
-
   Matrix operator+(const Matrix& other);
   Matrix operator-(const Matrix& other);
   Matrix operator*(const Matrix& other);
@@ -38,8 +28,19 @@ class Matrix {
   Matrix& operator*=(const double num);
   double& operator()(int i, int j);
 
+  bool EqMatrix(const Matrix& other) const;
+  void SumMatrix(const Matrix& other);
+  void SubMatrix(const Matrix& other);
+  void MulNumber(const double num);
+  void MulMatrix(const Matrix& other);
+  Matrix Transpose();
+  double Determinant();
+  Matrix CalcComplements();
+  Matrix InverseMatrix();
+
  private:
-  int rows_, cols_;
+  int rows_;
+  int cols_;
   double** matrix_;
 
   static constexpr double kAccuracy = 1.0e-7;
