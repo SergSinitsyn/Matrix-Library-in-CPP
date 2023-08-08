@@ -53,8 +53,8 @@ gcov_report: report/index.html
 
 linter:
 	@cp ../materials/linters/.clang-format ./
-	@clang-format -n $(SOURCES)
-	@clang-format -n $(TEST)
+	@clang-format -n -style=google -verbose $(SOURCES)
+	@clang-format -n -style=google -verbose $(TEST)
 	@rm -f .clang-format
 
 cppcheck:

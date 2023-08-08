@@ -3,12 +3,13 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <stdexcept>
 
 Matrix::Matrix() : Matrix(3, 3) {}
 
 Matrix::Matrix(const int rows, const int cols) {
   if (!IsNaturalNumbers(rows, cols)) {
-    throw "Incorrect parameters";
+    throw std::invalid_argument("Incorrect parameters");
   }
 
   AllocateMatrixMemory(rows, cols);
@@ -111,7 +112,7 @@ Matrix& Matrix::operator*=(const double num) {
 
 double& Matrix::operator()(int i, int j) {
   if (i >= rows_ || j >= cols_ || i < 0 || j < 0) {
-    throw "Index is outside the matrix";
+    throw std::out_of_range("Index is outside the matrix");
   }
   return matrix_[i][j];
 }
@@ -137,7 +138,7 @@ bool Matrix::EqMatrix(const Matrix& other) const {
 
 void Matrix::SumMatrix(const Matrix& other) {
   if (!IsSameDimensionMatrix(other)) {
-    throw "Different dimensions of matrices";
+    throw std::logic_error("Different dimensions of matrices");
   }
 
   for (int i = 0; i < rows_; ++i) {
@@ -149,7 +150,7 @@ void Matrix::SumMatrix(const Matrix& other) {
 
 void Matrix::SubMatrix(const Matrix& other) {
   if (!IsSameDimensionMatrix(other)) {
-    throw "Different dimensions of matrices";
+    throw std::logic_error("Different dimensions of matrices");
   }
 
   for (int i = 0; i < rows_; ++i) {
@@ -169,7 +170,9 @@ void Matrix::MulNumber(const double num) {
 
 void Matrix::MulMatrix(const Matrix& other) {
   if (cols_ != other.rows_) {
-    throw "The number of columns of the first matrix is not equal to the number of rows of the second matrix";
+    throw std::logic_error(
+        "The number of columns of the first matrix is not equal to the number "
+        "of rows of the second matrix");
   }
 
   Matrix result(rows_, other.cols_);
@@ -195,7 +198,7 @@ Matrix Matrix::Transpose() {
 
 double Matrix::Determinant() {
   if (!IsSquareMatrix()) {
-    throw "Matrix is not square";
+    throw std::logic_error("Matrix is not square");
   }
 
   if (IsMatrixNumber()) {
@@ -214,7 +217,7 @@ double Matrix::Determinant() {
 
 Matrix Matrix::CalcComplements() {
   if (!IsSquareMatrix()) {
-    throw "Matrix is not square";
+    throw std::logic_error("Matrix is not square");
   }
 
   Matrix result(rows_, cols_);
@@ -235,7 +238,7 @@ Matrix Matrix::CalcComplements() {
 Matrix Matrix::InverseMatrix() {
   double determinant = Determinant();
   if (fabs(determinant) < kAccuracy) {
-    throw "Matrix determinant is 0";
+    throw std::logic_error("Matrix determinant is 0");
   }
 
   return CalcComplements().Transpose() * (1.0 / determinant);
@@ -255,7 +258,7 @@ bool Matrix::IsMatrixNumber() const { return (rows_ == 1 && cols_ == 1); }
 
 void Matrix::SetDimension(const int new_rows, const int new_cols) {
   if (!IsNaturalNumbers(new_rows, new_cols)) {
-    throw "Incorrect parameters";
+    throw std::invalid_argument("Incorrect parameters");
   }
   if (new_rows == rows_ && new_cols == cols_) {
     return;
