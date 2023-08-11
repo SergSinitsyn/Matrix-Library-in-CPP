@@ -5,24 +5,28 @@
 #include <exception>
 #include <stdexcept>
 
+#include "matrixexception.h"
+
 Matrix::Matrix() : Matrix(3, 3) {}
 
 Matrix::Matrix(const int rows, const int cols) {
   if (!IsNaturalNumbers(rows, cols)) {
-    throw std::invalid_argument("Incorrect parameters");
+    throw MatrixInvalidArgumentException();
   }
 
   AllocateMatrixMemory(rows, cols);
 }
 
-Matrix::Matrix(const Matrix& other) {
+Matrix::Matrix(const int size) : Matrix(size, size) {}
+
+Matrix::Matrix(const Matrix& other) noexcept {
   if (this != &other) {
     AllocateMatrixMemory(other.rows_, other.cols_);
     CopyMatrixElements(other);
   }
 }
 
-Matrix::Matrix(Matrix&& other) : rows_{0}, cols_{0}, matrix_{nullptr} {
+Matrix::Matrix(Matrix&& other) noexcept : rows_{0}, cols_{0}, matrix_{nullptr} {
   if (this != &other) {
     std::swap(matrix_, other.matrix_);
     std::swap(rows_, other.rows_);
@@ -36,54 +40,49 @@ Matrix::~Matrix() {
   }
 }
 
-int Matrix::GetRows() const { return rows_; }
+int Matrix::GetRows() const noexcept { return rows_; }
 
-int Matrix::GetCols() const { return cols_; }
+int Matrix::GetCols() const noexcept { return cols_; }
 
 void Matrix::SetRows(const int new_rows) { SetDimension(new_rows, cols_); }
 
 void Matrix::SetCols(const int new_cols) { SetDimension(rows_, new_cols); }
 
-Matrix Matrix::operator+(const Matrix& other) {
+Matrix Matrix::operator+(const Matrix& other) const {
   Matrix result(*this);
-  result.SumMatrix(other);
-  return result;
+  return result += other;
 }
 
-Matrix Matrix::operator-(const Matrix& other) {
+Matrix Matrix::operator-(const Matrix& other) const {
   Matrix result(*this);
-  result.SubMatrix(other);
-  return result;
+  return result -= other;
 }
 
-Matrix Matrix::operator*(const Matrix& other) {
+Matrix Matrix::operator*(const Matrix& other) const {
   Matrix result(*this);
-  result.MulMatrix(other);
-  return result;
+  return result *= other;
 }
 
-Matrix Matrix::operator*(const double num) {
+Matrix Matrix::operator*(const double num) const {
   Matrix result(*this);
-  result.MulNumber(num);
-  return result;
+  return result *= num;
 }
 
 Matrix operator*(const double num, Matrix& other) {
   Matrix result(other);
-  result.MulNumber(num);
-  return result;
+  return result *= num;
 }
 
 bool Matrix::operator==(const Matrix& other) const { return EqMatrix(other); }
 
-Matrix& Matrix::operator=(const Matrix& other) {
+Matrix& Matrix::operator=(const Matrix& other) noexcept {
   if (this != &other) {
     CopyFrom(other);
   }
   return *this;
 }
 
-Matrix& Matrix::operator=(Matrix&& other) {
+Matrix& Matrix::operator=(Matrix&& other) noexcept {
   if (this != &other) {
     CopyFrom(other);
   }
@@ -105,14 +104,14 @@ Matrix& Matrix::operator*=(const Matrix& other) {
   return *this;
 }
 
-Matrix& Matrix::operator*=(const double num) {
+Matrix& Matrix::operator*=(const double num) noexcept {
   MulNumber(num);
   return *this;
 }
 
 double& Matrix::operator()(int i, int j) {
   if (i >= rows_ || j >= cols_ || i < 0 || j < 0) {
-    throw std::out_of_range("Index is outside the matrix");
+    throw MatrixOutOfRangeException();
   }
   return matrix_[i][j];
 }
@@ -121,13 +120,14 @@ bool Matrix::EqMatrix(const Matrix& other) const {
   if (this == &other) {
     return true;
   }
+
   if (!IsSameDimensionMatrix(other)) {
     return false;
   }
 
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
-      if (fabs(matrix_[i][j] - other.matrix_[i][j]) > kAccuracy) {
+      if (std::abs(matrix_[i][j] - other.matrix_[i][j]) > kAccuracy) {
         return false;
       }
     }
@@ -138,7 +138,7 @@ bool Matrix::EqMatrix(const Matrix& other) const {
 
 void Matrix::SumMatrix(const Matrix& other) {
   if (!IsSameDimensionMatrix(other)) {
-    throw std::logic_error("Different dimensions of matrices");
+    throw MatrixLogicErrorException("Different dimensions of matrices");
   }
 
   for (int i = 0; i < rows_; ++i) {
@@ -150,7 +150,7 @@ void Matrix::SumMatrix(const Matrix& other) {
 
 void Matrix::SubMatrix(const Matrix& other) {
   if (!IsSameDimensionMatrix(other)) {
-    throw std::logic_error("Different dimensions of matrices");
+    throw MatrixLogicErrorException("Different dimensions of matrices");
   }
 
   for (int i = 0; i < rows_; ++i) {
@@ -160,7 +160,7 @@ void Matrix::SubMatrix(const Matrix& other) {
   }
 }
 
-void Matrix::MulNumber(const double num) {
+void Matrix::MulNumber(const double num) noexcept {
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
       matrix_[i][j] *= num;
@@ -170,8 +170,9 @@ void Matrix::MulNumber(const double num) {
 
 void Matrix::MulMatrix(const Matrix& other) {
   if (cols_ != other.rows_) {
-    throw std::logic_error(
-        "The number of columns of the first matrix is not equal to the number "
+    throw MatrixLogicErrorException(
+        "The number of columns of the first matrix is not equal to the "
+        "number "
         "of rows of the second matrix");
   }
 
@@ -186,7 +187,7 @@ void Matrix::MulMatrix(const Matrix& other) {
   *this = result;
 }
 
-Matrix Matrix::Transpose() {
+Matrix Matrix::Transpose() const noexcept {
   Matrix result(cols_, rows_);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
@@ -196,9 +197,9 @@ Matrix Matrix::Transpose() {
   return result;
 }
 
-double Matrix::Determinant() {
+double Matrix::Determinant() const {
   if (!IsSquareMatrix()) {
-    throw std::logic_error("Matrix is not square");
+    throw MatrixLogicErrorException("Matrix is not square");
   }
 
   if (IsMatrixNumber()) {
@@ -207,7 +208,7 @@ double Matrix::Determinant() {
 
   double result = 0;
   for (int j = 0; j < cols_; ++j) {
-    if (fabs(matrix_[0][j]) > kAccuracy) {
+    if (std::abs(matrix_[0][j]) > kAccuracy) {
       result += matrix_[0][j] * GetSubmatrix(0, j).Determinant() *
                 (j % 2 == 0 ? 1 : -1);
     }
@@ -215,9 +216,9 @@ double Matrix::Determinant() {
   return result;
 }
 
-Matrix Matrix::CalcComplements() {
+Matrix Matrix::CalcComplements() const {
   if (!IsSquareMatrix()) {
-    throw std::logic_error("Matrix is not square");
+    throw MatrixLogicErrorException("Matrix is not square");
   }
 
   Matrix result(rows_, cols_);
@@ -235,32 +236,34 @@ Matrix Matrix::CalcComplements() {
   return result;
 }
 
-Matrix Matrix::InverseMatrix() {
+Matrix Matrix::InverseMatrix() const {
   double determinant = Determinant();
-  if (fabs(determinant) < kAccuracy) {
-    throw std::logic_error("Matrix determinant is 0");
+  if (std::abs(determinant) < kAccuracy) {
+    throw MatrixLogicErrorException("Matrix determinant is 0");
   }
 
   return CalcComplements().Transpose() * (1.0 / determinant);
 }
 
-bool Matrix::IsNaturalNumbers(int rows, int cols) {
+bool Matrix::IsNaturalNumbers(int rows, int cols) const noexcept {
   return (rows > 0 && cols > 0);
 }
 
-bool Matrix::IsSameDimensionMatrix(const Matrix& other) const {
-  return (cols_ == other.cols_ && rows_ == other.rows_);
+bool Matrix::IsSameDimensionMatrix(const Matrix& other) const noexcept {
+  return ((cols_ == other.cols_) && (rows_ == other.rows_));
 }
 
-bool Matrix::IsSquareMatrix() const { return (rows_ == cols_); }
+bool Matrix::IsSquareMatrix() const noexcept { return (rows_ == cols_); }
 
-bool Matrix::IsMatrixNumber() const { return (rows_ == 1 && cols_ == 1); }
+bool Matrix::IsMatrixNumber() const noexcept {
+  return ((rows_ == 1) && (cols_ == 1));
+}
 
 void Matrix::SetDimension(const int new_rows, const int new_cols) {
   if (!IsNaturalNumbers(new_rows, new_cols)) {
-    throw std::invalid_argument("Incorrect parameters");
+    throw MatrixInvalidArgumentException();
   }
-  if (new_rows == rows_ && new_cols == cols_) {
+  if ((new_rows == rows_) && (new_cols == cols_)) {
     return;
   }
 
@@ -277,7 +280,7 @@ void Matrix::SetDimension(const int new_rows, const int new_cols) {
   std::swap(cols_, result.cols_);
 }
 
-Matrix Matrix::GetSubmatrix(int deleted_row, int deleted_col) {
+Matrix Matrix::GetSubmatrix(int deleted_row, int deleted_col) const noexcept {
   Matrix result(rows_ - 1, cols_ - 1);
 
   int new_i = 0;
@@ -331,7 +334,7 @@ void Matrix::CopyMatrixElements(const Matrix& other) {
   }
 }
 
-void Matrix::InvalidateMatrix() {
+void Matrix::InvalidateMatrix() noexcept {
   rows_ = 0;
   cols_ = 0;
   matrix_ = nullptr;

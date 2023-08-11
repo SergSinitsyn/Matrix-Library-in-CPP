@@ -4,58 +4,59 @@
 class Matrix {
  public:
   Matrix();
-  Matrix(const int rows, const int cols);
-  Matrix(const Matrix& other);
-  Matrix(Matrix&& other);
+  Matrix(const int, const int);
+  Matrix(const int);
+  Matrix(const Matrix&) noexcept;
+  Matrix(Matrix&&) noexcept;
   ~Matrix();
 
-  int GetRows() const;
-  int GetCols() const;
-  void SetRows(const int new_rows);
-  void SetCols(const int new_cols);
+  int GetRows() const noexcept;
+  int GetCols() const noexcept;
+  void SetRows(const int);
+  void SetCols(const int);
 
-  Matrix operator+(const Matrix& other);
-  Matrix operator-(const Matrix& other);
-  Matrix operator*(const Matrix& other);
-  Matrix operator*(const double num);
-  friend Matrix operator*(const double num, Matrix& other);
-  bool operator==(const Matrix& other) const;
-  Matrix& operator=(const Matrix& other);
-  Matrix& operator=(Matrix&& other);
-  Matrix& operator+=(const Matrix& other);
-  Matrix& operator-=(const Matrix& other);
-  Matrix& operator*=(const Matrix& other);
-  Matrix& operator*=(const double num);
-  double& operator()(int i, int j);
+  Matrix operator+(const Matrix&) const;
+  Matrix operator-(const Matrix&) const;
+  Matrix operator*(const Matrix&) const;
+  Matrix operator*(const double) const;
+  friend Matrix operator*(const double, Matrix&);
+  bool operator==(const Matrix&) const;
+  Matrix& operator=(const Matrix&) noexcept;
+  Matrix& operator=(Matrix&&) noexcept;
+  Matrix& operator+=(const Matrix&);
+  Matrix& operator-=(const Matrix&);
+  Matrix& operator*=(const Matrix&);
+  Matrix& operator*=(const double) noexcept;
+  double& operator()(int, int);
 
-  bool EqMatrix(const Matrix& other) const;
-  void SumMatrix(const Matrix& other);
-  void SubMatrix(const Matrix& other);
-  void MulNumber(const double num);
-  void MulMatrix(const Matrix& other);
-  Matrix Transpose();
-  double Determinant();
-  Matrix CalcComplements();
-  Matrix InverseMatrix();
+  bool EqMatrix(const Matrix&) const;
+  void SumMatrix(const Matrix&);
+  void SubMatrix(const Matrix&);
+  void MulNumber(const double) noexcept;
+  void MulMatrix(const Matrix&);
+  Matrix Transpose() const noexcept;
+  double Determinant() const;
+  Matrix CalcComplements() const;
+  Matrix InverseMatrix() const;
 
  private:
   int rows_;
   int cols_;
   double** matrix_;
 
-  static constexpr double kAccuracy = 1.0e-7;
+  static constexpr double kAccuracy = 1E-7;
 
-  bool IsNaturalNumbers(int rows, int cols);
-  bool IsSameDimensionMatrix(const Matrix& other) const;
-  bool IsSquareMatrix() const;
-  bool IsMatrixNumber() const;
-  void SetDimension(const int new_rows, const int new_cols);
-  Matrix GetSubmatrix(int del_row, int del_col);
-  void CopyFrom(const Matrix& other);
+  bool IsNaturalNumbers(int, int) const noexcept;
+  bool IsSameDimensionMatrix(const Matrix&) const noexcept;
+  bool IsSquareMatrix() const noexcept;
+  bool IsMatrixNumber() const noexcept;
+  void SetDimension(const int, const int);
+  Matrix GetSubmatrix(int, int) const noexcept;
+  void CopyFrom(const Matrix&);
   void FreeMatrixMemory();
-  void AllocateMatrixMemory(const int rows, const int cols);
-  void CopyMatrixElements(const Matrix& other);
-  void InvalidateMatrix();
+  void AllocateMatrixMemory(const int, const int);
+  void CopyMatrixElements(const Matrix&);
+  void InvalidateMatrix() noexcept;
 };
 
 #endif  // MATRIX_MATRIX_H_

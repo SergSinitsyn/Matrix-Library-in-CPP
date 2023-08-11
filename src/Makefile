@@ -24,7 +24,7 @@ TEST_LEAKS 			= $(TEST_DIR)/$(TEST_SOURCE_FILE)
 
 TEST_FILE_COV		= $(TEST_FILE)_cov
 
-all: $(LIB) test
+all: $(LIB)
 
 $(LIB): $(SOURCES) $(HEADERS)
 	$(CC) $(WCHECK) $(WFLAGS) -c $(SOURCES)
@@ -66,4 +66,4 @@ $(TEST_FILE_FOR_LEAKS): $(LIB)
 leaks: $(TEST_FILE_FOR_LEAKS)
 	leaks --atExit -- ./$(TEST_FILE_FOR_LEAKS)
 
-.PHONY: all clean test gcov_report rebuild linter cppcheck leaks
+.PHONY: all clean test gcov_report rebuild linter cppcheck leaks matrix
