@@ -32,9 +32,8 @@ To build and install this project, please follow the instructions below:
 3. Run: `make`.
 4. This command will compile the source code and create the `matrix.a` library.
 
-### Usage -->
-
-To use this library in your own C++ project, simply link against the `matrix.a` library file.
+### Usage
+To use this component in your own C++ project, simply link to the `matrix.a` library file.
 
 ## Authors
 
