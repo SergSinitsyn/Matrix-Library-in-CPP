@@ -1,9 +1,13 @@
+#ifndef MATRIX_MATRIX_EXCEPTION_H_
+#define MATRIX_MATRIX_EXCEPTION_H_
+
 #include <exception>
 #include <string>
 
 class MatrixException : public std::exception {
  public:
-  explicit MatrixException(const std::string& message) : message_(message) {}
+  explicit MatrixException(const std::string& message)
+      : message_("Matrix: " + message) {}
 
   const char* what() const noexcept override { return message_.c_str(); }
 
@@ -28,3 +32,5 @@ class MatrixOutOfRangeException : public MatrixException {
   explicit MatrixOutOfRangeException()
       : MatrixException("Index is outside the matrix") {}
 };
+
+#endif  // MATRIX_MATRIX_EXCEPTION_H_

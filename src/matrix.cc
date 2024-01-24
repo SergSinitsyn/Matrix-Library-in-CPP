@@ -3,9 +3,13 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <functional>
+#include <iostream>
+#include <random>
 #include <stdexcept>
+#include <vector>
 
-#include "matrixexception.h"
+#include "matrix_exception.h"
 
 Matrix::Matrix() : Matrix(3, 3) {}
 
@@ -31,6 +35,36 @@ Matrix::Matrix(Matrix&& other) noexcept : rows_{0}, cols_{0}, matrix_{nullptr} {
     std::swap(matrix_, other.matrix_);
     std::swap(rows_, other.rows_);
     std::swap(cols_, other.cols_);
+  }
+}
+
+Matrix::Matrix(const std::vector<double>& data) {
+  rows_ = 1;
+  cols_ = data.size();
+  if (cols_ <= 0) {
+    throw MatrixInvalidArgumentException();
+  }
+  matrix_ = new double*[rows_];
+  matrix_[0] = new double[cols_];
+  for (int j = 0; j < cols_; ++j) {
+    matrix_[0][j] = data[j];
+  }
+}
+
+Matrix::Matrix(const std::vector<double>& data, const int rows,
+               const int cols) {
+  if (!IsNaturalNumbers(rows, cols)) {
+    throw MatrixInvalidArgumentException();
+  }
+  if (static_cast<size_t>(rows * cols) != data.size()) {
+    throw MatrixLogicErrorException("Dimensions don't match to data size");
+  }
+
+  AllocateMatrixMemory(rows, cols);
+
+  for (int i = 0; i < rows; ++i) {
+    std::copy(data.begin() + i * cols, data.begin() + (i + 1) * cols,
+              matrix_[i]);
   }
 }
 
@@ -116,15 +150,28 @@ double& Matrix::operator()(int i, int j) {
   return matrix_[i][j];
 }
 
+const double& Matrix::operator()(int i, int j) const {
+  if (i >= rows_ || j >= cols_ || i < 0 || j < 0) {
+    throw MatrixOutOfRangeException();
+  }
+  return matrix_[i][j];
+}
+
+std::vector<double> Matrix::ToVector() const {
+  std::vector<double> result(rows_ * cols_);
+  for (int i = 0; i < rows_; ++i) {
+    std::copy(matrix_[i], matrix_[i] + cols_, result.data() + i * cols_);
+  }
+  return result;
+}
+
 bool Matrix::EqMatrix(const Matrix& other) const {
   if (this == &other) {
     return true;
   }
-
   if (!IsSameDimensionMatrix(other)) {
     return false;
   }
-
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
       if (std::abs(matrix_[i][j] - other.matrix_[i][j]) > kAccuracy) {
@@ -132,7 +179,6 @@ bool Matrix::EqMatrix(const Matrix& other) const {
       }
     }
   }
-
   return true;
 }
 
@@ -177,6 +223,7 @@ void Matrix::MulMatrix(const Matrix& other) {
   }
 
   Matrix result(rows_, other.cols_);
+
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < other.cols_; ++j) {
       for (int k = 0; k < cols_; ++k) {
@@ -187,8 +234,30 @@ void Matrix::MulMatrix(const Matrix& other) {
   *this = result;
 }
 
+Matrix Matrix::HadamardProduct(const Matrix& other) {
+  if (!IsSameDimensionMatrix(other)) {
+    throw MatrixLogicErrorException("Different dimensions of matrices");
+  }
+  Matrix result(rows_, cols_);
+
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < cols_; ++j) {
+      result.matrix_[i][j] = matrix_[i][j] * other.matrix_[i][j];
+    }
+  }
+  return result;
+}
+
+void Matrix::SwapRows(int a, int b) {
+  if (a >= rows_ || b >= rows_ || a < 0 || b < 0) {
+    throw MatrixOutOfRangeException();
+  }
+  if (a != b) std::swap(matrix_[a], matrix_[b]);
+}
+
 Matrix Matrix::Transpose() const noexcept {
   Matrix result(cols_, rows_);
+
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
       result.matrix_[j][i] = matrix_[i][j];
@@ -243,6 +312,46 @@ Matrix Matrix::InverseMatrix() const {
   }
 
   return CalcComplements().Transpose() * (1.0 / determinant);
+}
+
+Matrix Matrix::ApplyFunction(std::function<double(double&)> function) const {
+  Matrix result(rows_, cols_);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < cols_; ++j) {
+      result.matrix_[i][j] = function(matrix_[i][j]);
+    }
+  }
+  return result;
+}
+
+void Matrix::FillMatrixWithRandomValues(double min, double max) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<double> dis(min, max);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < cols_; ++j) {
+      matrix_[i][j] = dis(gen);
+    }
+  }
+}
+
+void Matrix::Print() noexcept {
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < cols_; ++j) {
+      std::cout << matrix_[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+}
+
+double Matrix::SumOfMatrixElements() const {
+  double sum = 0.0;
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < cols_; ++j) {
+      sum += matrix_[i][j];
+    }
+  }
+  return sum;
 }
 
 bool Matrix::IsNaturalNumbers(int rows, int cols) const noexcept {
